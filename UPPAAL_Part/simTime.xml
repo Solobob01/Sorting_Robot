@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+const int NR_POSITION = 5;
+const int NR_MOTORS = 4;
+//const double SPEED = 1.0;
+const int SPEED = 1;
+int totalTime = 0;
+const int[0,180] position[NR_POSITION][NR_MOTORS] = {{83, 64, 55, 3},
+{117, 53, 70, 3},
+{56, 46, 79, 4},
+{135, 23, 105, 18},
+{56, 46, 79, 4}};
+typedef int[0, NR_POSITION - 1] id_position;
+
+const int[0,180] startPoint[NR_MOTORS] = {45, 164, 155, 15};
+
+int[0,180] current_position[NR_MOTORS] = {90, 90, 90, 90};
+broadcast chan move[NR_POSITION];</declaration>
+	<template>
+		<name x="5" y="5">Position</name>
+		<parameter>const id_position id</parameter>
+		<location id="id0" x="-170" y="-68">
+			<name x="-180" y="-102">END</name>
+		</location>
+		<location id="id1" x="-306" y="-68">
+			<urgent/>
+		</location>
+		<init ref="id1"/>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-272" y="-85">move[id]!</label>
+		</transition>
+	</template>
+	<template>
+		<name>UpdateTime</name>
+		<declaration>
+void updateTime(id_position e){
+    int i;
+    int localTime = -1;
+    int newTime = -1;
+    int id = -1;
+    for(i = 0;i &lt; 4;i++){
+        localTime = abs(current_position[i] - position[e][i])/SPEED;
+        if(localTime  &gt;= newTime){
+            newTime = localTime;
+        }
+        current_position[i] = position[e][i];
+    }
+    for(i = 0;i &lt; 4;i++){
+        localTime = abs(current_position[i] - startPoint[i])/SPEED;
+        if(localTime  &gt;= newTime){
+            newTime = localTime;
+        }
+        current_position[i] = startPoint[i];
+    }
+    totalTime += newTime;
+}</declaration>
+		<location id="id2" x="0" y="0">
+		</location>
+		<init ref="id2"/>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id2"/>
+			<label kind="select" x="-42" y="-119">e : id_position</label>
+			<label kind="synchronisation" x="-25" y="-102">move[e]?</label>
+			<label kind="assignment" x="-42" y="-85">updateTime(e)</label>
+			<nail x="-68" y="-68"/>
+			<nail x="68" y="-68"/>
+		</transition>
+	</template>
+	<system>system Position, UpdateTime;
+    </system>
+	<queries>
+		<query>
+			<formula>E&lt;&gt; (totalTime &lt;= 588 &amp;&amp; forall(i : id_position) Position(i).END)</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula></formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>
